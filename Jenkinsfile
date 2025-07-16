@@ -7,9 +7,15 @@ pipeline {
     }
 
     stages {
-        stage('Checkout Code') {
+        stage('Checkout') {
             steps {
                 git url: 'https://github.com/rahulreghunathOrg/DevOpsCodeDemo.git'
+            }
+        }
+
+        stage('Build WAR with Maven') {
+            steps {
+                sh 'mvn clean package'
             }
         }
 
