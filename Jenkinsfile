@@ -2,7 +2,7 @@ pipeline {
     agent { label 'build-node' }
 
     environment {
-        IMAGE_NAME = 'rahulreghunath/addressbook'
+        IMAGE_NAME = 'rahuldocker314/addressbook'
         TAG = 'v1'
     }
 
