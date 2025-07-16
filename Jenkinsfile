@@ -33,32 +33,22 @@ pipeline {
                 }
             }
         }
-       
-        stage('Deploy to EC2') {
+              
+
+    stage('Deploy to EC2') {
         steps {
-            script {
-                def ec2_ip = sh(
-                    script: """aws ec2 describe-instances \
-                        --filters "Name=tag:Name,Values=JenkinsAgent2" \
-                        --query "Reservations[*].Instances[*].PublicIpAddress" \
-                        --output text""",
-                    returnStdout: true
-                ).trim()
-    
-                echo "Discovered IP: ${ec2_ip}"
-    
-                sshagent(['jenkins-key']) {
-                    sh """
-                        ssh -o StrictHostKeyChecking=no ubuntu@${ec2_ip} << 'EOF'
-                            docker pull rahuldocker314/addressbook:v1
-                            docker rm -f addressbook || true
-                            docker run -d --name addressbook -p 8080:8080 rahuldocker314/addressbook:v1
-                        EOF
-                    """
-                }
+            sshagent(['jenkins-key']) {
+                sh '''
+                    ssh -o StrictHostKeyChecking=no ubuntu@18.116.89.147 << 'EOF'
+                        docker pull rahuldocker314/addressbook:v1
+                        docker rm -f addressbook || true
+                        docker run -d --name addressbook -p 8080:8080 rahuldocker314/addressbook:v1
+                    EOF
+                '''
             }
         }
     }
+
 
 
 
