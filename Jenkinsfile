@@ -1,50 +1,31 @@
+pipeline {
+    agent { label 'build-node' }
 
-pipeline{
-    tools{
-       
-        maven 'mymaven'
+    environment {
+        IMAGE_NAME = 'rahulreghunath/addressbook'
+        TAG = 'v1'
     }
-	agent any
-      stages{
-           stage('Checkout the code'){
-	    
-               steps{
-		 echo 'cloning the repo'
-                 git 'https://github.com/Sonal0409/DevOpsClassCodes.git'
-              }
-          }
-          stage('Compile'){
-             
-              steps{
-                  echo 'complie the code again..'
-                  sh 'mvn compile'
-	      }
-          }
-          stage('CodeReview'){
-		  
-              steps{
-		    
-		  echo 'codeReview'
-                  sh 'mvn pmd:pmd'
-              }
-          }
-           stage('UnitTest'){
-		  
-              steps{
-	         
-                  sh 'mvn test'
-              }
-          
-          }
-        
-          stage('Package'){
-		  
-              steps{
-		  
-                  sh 'mvn package'
-              }
-          }
-	     
-          
-      }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git url: 'https://github.com/rahulreghunathOrg/DevOpsCodeDemo.git'
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                sh "docker build -t ${IMAGE_NAME}:${TAG} ."
+            }
+        }
+
+        stage('Push to DockerHub') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'dockerhub-creds', usernameVariable: 'DOCKER_USER', passwordVariable: 'DOCKER_PASS')]) {
+                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    sh "docker push ${IMAGE_NAME}:${TAG}"
+                }
+            }
+        }
+    }
 }
