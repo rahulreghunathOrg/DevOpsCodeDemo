@@ -33,5 +33,21 @@ pipeline {
                 }
             }
         }
+
+        stage('Deploy to EC2') {
+            steps {
+                sshagent(['deploy-ec2-creds']) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ubuntu@jenkins-agent-1 << EOF
+                            docker pull rahulreghunath/addressbook:v1
+                            docker rm -f addressbook || true
+                            docker run -d --name addressbook -p 8080:8080 rahuldocker314/addressbook:v1
+                        EOF
+                    '''
+                }
+            }
+        }
+
+
     }
 }
