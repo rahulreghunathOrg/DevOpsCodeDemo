@@ -35,21 +35,20 @@ pipeline {
         }
               
 
-    stage('Deploy to EC2') {
-        steps {
-            sshagent(['jenkins-key']) {
-                sh '''
-                    ssh -o StrictHostKeyChecking=no ubuntu@18.116.89.147 << 'EOF'
-                        docker pull rahuldocker314/addressbook:v1
-                        docker rm -f addressbook || true
-                        docker run -d --name addressbook -p 8080:8080 rahuldocker314/addressbook:v1
-                    EOF
-                '''
+        stage('Deploy to EC2') {
+            steps {
+                sshagent(['jenkins-key']) {
+                    script {
+                        def sshCmd = '''
+                            docker pull rahuldocker314/addressbook:v1
+                            docker rm -f addressbook || true
+                            docker run -d --name addressbook -p 8080:8080 rahuldocker314/addressbook:v1
+                        '''
+                        sh "ssh -o StrictHostKeyChecking=no ubuntu@18.116.89.147 '${sshCmd}'"
+                    }
+                }
             }
         }
-    }
-
-
 
 
     }
