@@ -36,7 +36,7 @@ pipeline {
 
         stage('Deploy to EC2') {
             steps {
-                sshagent(['deploy-ec2-creds']) {
+                sshagent(['jenkins-key']) {
                     sh '''
                         ssh -o StrictHostKeyChecking=no ubuntu@jenkins-agent-1 << EOF
                             docker pull rahulreghunath/addressbook:v1
