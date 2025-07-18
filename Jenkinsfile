@@ -6,6 +6,7 @@ pipeline {
         TAG = 'v1'
         AWS_REGION = 'us-east-2'
         EKS_CLUSTER = 'rahul-eks-cluster'
+        EKS_CLUSTER_ARN = 'arn:aws:eks:us-east-2:592779367492:cluster/rahul-eks-cluster'
     }
 
     stages {
@@ -56,18 +57,21 @@ pipeline {
                     echo "Updating kubeconfig for EKS..."
                     aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER
 
-                    echo "Fetching IAM token for Kubernetes auth..."
+                    echo "Fetching token manually..."
                     TOKEN=$(aws eks get-token --region $AWS_REGION --cluster-name $EKS_CLUSTER --output text --query 'status.token')
 
-                    echo "Injecting token into kubeconfig..."
-                    kubectl config set-credentials eks-user --token="$TOKEN"
-                    kubectl config set-context --current --user=eks-user
+                    echo "Creating fresh context with token..."
+                    kubectl config set-credentials eks-token-user --token="$TOKEN"
+                    kubectl config set-context eks-token-context \
+                      --cluster=$EKS_CLUSTER_ARN \
+                      --user=eks-token-user
+                    kubectl config use-context eks-token-context
 
-                    echo "Deploying to EKS..."
+                    echo "Applying manifests..."
                     kubectl apply -f k8s/deployment.yaml
                     kubectl apply -f k8s/service.yaml
 
-                    echo "Checking rollout..."
+                    echo "Rollout status..."
                     kubectl rollout status deployment/addressbook
                     kubectl get svc addressbook-service
                 '''
