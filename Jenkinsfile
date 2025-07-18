@@ -53,16 +53,18 @@ pipeline {
         stage('Deploy to EKS') {
             steps {
                 sh '''
-                    whoami
-                    echo $HOME
-                    echo "testing123 -----------------------------------------------------------------------"
-                    kubectl config view
-                    echo "testing -----------------------------------------------------------------------"
                     echo "Updating kubeconfig for EKS..."
                     aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER
 
-                    echo "Applying Kubernetes manifests..."
-                    kubectl apply -f k8s/deployment.yaml --validate=false
+                    echo "Fetching IAM token for Kubernetes auth..."
+                    TOKEN=$(aws eks get-token --region $AWS_REGION --cluster-name $EKS_CLUSTER --output text --query 'status.token')
+
+                    echo "Injecting token into kubeconfig..."
+                    kubectl config set-credentials eks-user --token="$TOKEN"
+                    kubectl config set-context --current --user=eks-user
+
+                    echo "Deploying to EKS..."
+                    kubectl apply -f k8s/deployment.yaml
                     kubectl apply -f k8s/service.yaml
 
                     echo "Checking rollout..."
