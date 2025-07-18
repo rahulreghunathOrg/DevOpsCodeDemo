@@ -53,6 +53,9 @@ pipeline {
         stage('Deploy to EKS') {
             steps {
                 sh '''
+                    whoami
+                    echo $HOME
+                    echo "testing123 -----------------------------------------------------------------------"
                     kubectl config view
                     echo "testing -----------------------------------------------------------------------"
                     echo "Updating kubeconfig for EKS..."
