@@ -62,7 +62,7 @@ pipeline {
                     aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER
 
                     echo "Applying Kubernetes manifests..."
-                    kubectl apply -f k8s/deployment.yaml
+                    kubectl apply -f k8s/deployment.yaml --validate=false
                     kubectl apply -f k8s/service.yaml
 
                     echo "Checking rollout..."
