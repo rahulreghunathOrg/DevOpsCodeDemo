@@ -53,6 +53,8 @@ pipeline {
         stage('Deploy to EKS') {
             steps {
                 sh '''
+                    kubectl config view
+                    echo "testing -----------------------------------------------------------------------"
                     echo "Updating kubeconfig for EKS..."
                     aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER
 
