@@ -4,6 +4,8 @@ pipeline {
     environment {
         IMAGE_NAME = 'rahuldocker314/addressbook'
         TAG = 'v1'
+        AWS_REGION = 'us-east-2'
+        EKS_CLUSTER = 'rahul-eks-cluster'
     }
 
     stages {
@@ -33,9 +35,8 @@ pipeline {
                 }
             }
         }
-              
 
-         stage('Deploy to EC2') {
+        stage('Deploy to EC2') {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'jenkins-ec2-key', keyFileVariable: 'KEY')]) {
                     sh '''
@@ -49,7 +50,21 @@ pipeline {
             }
         }
 
+        stage('Deploy to EKS') {
+            steps {
+                sh '''
+                    echo "Updating kubeconfig for EKS..."
+                    aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER
 
+                    echo "Applying Kubernetes manifests..."
+                    kubectl apply -f k8s/deployment.yaml
+                    kubectl apply -f k8s/service.yaml
 
+                    echo "Checking rollout..."
+                    kubectl rollout status deployment/addressbook
+                    kubectl get svc addressbook-service
+                '''
+            }
+        }
     }
 }
