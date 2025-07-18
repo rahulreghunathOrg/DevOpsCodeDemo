@@ -2,10 +2,10 @@ pipeline {
     agent { label 'agent1' }
 
     environment {
-        IMAGE_NAME = 'rahuldocker314/addressbook'
-        TAG = 'v1'
-        AWS_REGION = 'us-east-2'
-        EKS_CLUSTER = 'rahul-eks-cluster'
+        IMAGE_NAME   = 'rahuldocker314/addressbook'
+        TAG          = 'v1'
+        AWS_REGION   = 'us-east-2'
+        EKS_CLUSTER  = 'rahul-eks-cluster'
     }
 
     stages {
@@ -56,21 +56,11 @@ pipeline {
                     echo "🔄 Updating kubeconfig for EKS..."
                     aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER
 
-                    echo "🔐 Fetching IAM token for EKS API access..."
-                    TOKEN=$(aws eks get-token --region $AWS_REGION --cluster-name $EKS_CLUSTER --output text --query 'status.token')
-
-                    echo "🌐 Injecting token into fresh kubectl context..."
-                    kubectl config set-credentials eks-token-user --token="$TOKEN"
-                    kubectl config set-context eks-token-context \
-                      --cluster=$EKS_CLUSTER \
-                      --user=eks-token-user
-                    kubectl config use-context eks-token-context
-
-                    echo "🚀 Deploying to EKS..."
+                    echo "🚀 Applying manifests to cluster..."
                     kubectl apply -f k8s/deployment.yaml --validate=false
                     kubectl apply -f k8s/service.yaml --validate=false
 
-                    echo "📦 Checking rollout..."
+                    echo "📦 Checking rollout and service..."
                     kubectl rollout status deployment/addressbook
                     kubectl get svc addressbook-service
                 '''
