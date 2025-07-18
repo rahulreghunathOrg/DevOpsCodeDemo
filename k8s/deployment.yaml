@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: addressbook
+  labels:
+    app: addressbook
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: addressbook
+  template:
+    metadata:
+      labels:
+        app: addressbook
+    spec:
+      containers:
+      - name: addressbook
+        image: rahuldocker314/addressbook:v1
+        ports:
+        - containerPort: 8080
