@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'build-node' }
+    agent { label 'jenkins-agent-1' }
 
     environment {
         IMAGE_NAME = 'rahuldocker314/addressbook'
@@ -37,7 +37,7 @@ pipeline {
 
         stage('Deploy to EC2') {
             steps {
-                sshagent(['jenkins-key']) {
+                sshagent(['jenkins-ec2-key']) {
                     script {
                         def sshCmd = '''
                             docker pull rahuldocker314/addressbook:v1
