@@ -1,5 +1,5 @@
 pipeline {
-    agent { label 'jenkins-agent-1' }
+    agent { label 'agent1' }
 
     environment {
         IMAGE_NAME = 'rahuldocker314/addressbook'
