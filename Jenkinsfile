@@ -40,7 +40,7 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'jenkins-ec2-key', keyFileVariable: 'KEY')]) {
                     sh '''
-                        ssh -o StrictHostKeyChecking=no -i $KEY ubuntu@18.116.8.130 '
+                        ssh -o StrictHostKeyChecking=no -i $KEY ubuntu@3.137.175.66 '
                             docker pull rahuldocker314/addressbook:v1 &&
                             docker rm -f addressbook || true &&
                             docker run -d --name addressbook -p 8080:8080 rahuldocker314/addressbook:v1
