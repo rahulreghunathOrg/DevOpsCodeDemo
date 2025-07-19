@@ -59,9 +59,24 @@ pipeline {
         stage('Deploy to EKS') {
             steps {
                 sh '''
+                    echo "🔄 Resetting kubeconfig..."
+                    rm -rf ~/.kube/config
                     aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER
+
+                    echo "🔐 Fetching static EKS token..."
+                    TOKEN=$(aws eks get-token --region $AWS_REGION --cluster-name $EKS_CLUSTER --output text --query 'status.token')
+
+                    echo "🔧 Injecting static context..."
+                    CLUSTER_NAME=$(kubectl config view --minify -o jsonpath='{.contexts[0].context.cluster}')
+                    kubectl config set-credentials eks-token-user --token="$TOKEN"
+                    kubectl config set-context eks-token-context --cluster="$CLUSTER_NAME" --user=eks-token-user
+                    kubectl config use-context eks-token-context
+
+                    echo "🚀 Applying Kubernetes manifests..."
                     kubectl apply -f k8s/deployment.yaml --validate=false
                     kubectl apply -f k8s/service.yaml --validate=false
+
+                    echo "📦 Checking rollout and service..."
                     kubectl rollout status deployment/addressbook
                     kubectl get svc addressbook-service
                 '''
