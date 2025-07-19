@@ -49,18 +49,23 @@ pipeline {
                 }
             }
         }
-        stage('Debug Workspace') {
-                    steps {
-                        sh 'pwd && ls -la k8s/'
-                    }
-                }
-        
-                sh '''
-            aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER
-            kubectl apply -f k8s/deployment.yaml --validate=false
-            kubectl apply -f k8s/service.yaml --validate=false
-        '''
 
-      
+        stage('Debug Workspace') {
+            steps {
+                sh 'pwd && ls -la k8s/'
+            }
+        }
+
+        stage('Deploy to EKS') {
+            steps {
+                sh '''
+                    aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER
+                    kubectl apply -f k8s/deployment.yaml --validate=false
+                    kubectl apply -f k8s/service.yaml --validate=false
+                    kubectl rollout status deployment/addressbook
+                    kubectl get svc addressbook-service
+                '''
+            }
+        }
     }
 }
