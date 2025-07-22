@@ -50,7 +50,7 @@ pipeline {
             steps {
                 withCredentials([sshUserPrivateKey(credentialsId: 'jenkins-ec2-key', keyFileVariable: 'KEY')]) {
                     sh '''
-                        ssh -o StrictHostKeyChecking=no -i $KEY ubuntu@18.117.192.148 '
+                        ssh -o StrictHostKeyChecking=no -i $KEY ubuntu@18.191.44.52 '
                             docker pull rahuldocker314/addressbook:v1 &&
                             docker rm -f addressbook || true &&
                             docker run -d --name addressbook -p 8080:8080 rahuldocker314/addressbook:v1
@@ -69,17 +69,17 @@ pipeline {
         stage('Deploy to EKS') {
             steps {
                 sh '''
-                    echo "🔄 Resetting kubeconfig..."
+                    echo "Resetting kubeconfig..."
                     rm -rf ~/.kube/config
 
-                    echo "🔄 Setting kubeconfig from AWS CLI..."
+                    echo "Setting kubeconfig from AWS CLI..."
                     aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER
 
-                    echo "🚀 Applying Kubernetes manifests..."
+                    echo "Applying Kubernetes manifests..."
                     kubectl apply -f k8s/deployment.yaml --validate=false
                     kubectl apply -f k8s/service.yaml --validate=false
 
-                    echo "📦 Checking rollout and service..."
+                    echo "Checking rollout and service..."
                     kubectl rollout status deployment/addressbook
                     kubectl get svc addressbook-service
                 '''
